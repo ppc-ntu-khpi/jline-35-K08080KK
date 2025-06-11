@@ -1,13 +1,15 @@
-package com.mybank.tui;
+package domain;
 
 import com.mybank.domain.Bank;
 import com.mybank.domain.CheckingAccount;
 import com.mybank.domain.Customer;
 import com.mybank.domain.SavingsAccount;
+import com.mybank.data.DataSource;
+import com.mybank.reporting.CustomerReport;
 import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
-
+import java.io.IOException;
 import org.jline.reader.*;
 import org.jline.reader.impl.completer.*;
 import org.jline.utils.*;
@@ -39,7 +41,7 @@ public class CLIdemo {
     private String[] commandsList;
 
     public void init() {
-        commandsList = new String[]{"help", "customers", "customer", "exit"};
+        commandsList = new String[]{"help", "report", "customers", "customer", "exit"};
     }
 
     public void run() {
@@ -59,6 +61,9 @@ public class CLIdemo {
         while ((line = readLine(reader, "")) != null) {
             if ("help".equals(line)) {
                 printHelp();
+            }else if("report".equals(line)){
+                CustomerReport report = new CustomerReport();
+                report.generateReport();
             } else if ("customers".equals(line)) {
                 AttributedStringBuilder a = new AttributedStringBuilder()
                         .append("\nThis is all of your ")
@@ -142,11 +147,14 @@ public class CLIdemo {
     }
 
     public static void main(String[] args) {
+        try {
+            DataSource dataSource = new DataSource("data/test.dat");
+            dataSource.loadData();
+        } catch (IOException e) {
+            System.err.println("Error loading data: " + e.getMessage());
+            return;
+        }
 
-        Bank.addCustomer("John", "Doe");
-        Bank.addCustomer("Fox", "Mulder");
-        Bank.getCustomer(0).addAccount(new CheckingAccount(2000));
-        Bank.getCustomer(1).addAccount(new SavingsAccount(1000, 3));
 
         CLIdemo shell = new CLIdemo();
         shell.init();
